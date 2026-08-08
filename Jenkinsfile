@@ -52,16 +52,21 @@ pipeline {
             }
         }
 
-        stage('Check Workspace') {
-    steps {
-        bat 'echo Current Directory'
-        bat 'cd'
-        bat 'echo ====================='
-        bat 'dir'
-        bat 'echo ====================='
-        bat 'dir /s Dockerfile'
-    }
-}
+        stage('Build Frontend Image') {
+
+            steps {
+
+                dir('bbhealthapp-frontend') {
+
+                    bat """
+                    docker build -t %ECR_FRONTEND%:%IMAGE_TAG% .
+                    """
+
+                }
+
+            }
+
+        }
 
         stage('Build Master Service') {
 
