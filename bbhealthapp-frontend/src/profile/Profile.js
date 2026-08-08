@@ -37,7 +37,9 @@ function Profile() {
         },
         {
             label: "Role",
-            value: user.role
+            value: user.roles && user.roles.length > 0
+            ? user.roles[0].name
+            : ""
         }
     ]
 

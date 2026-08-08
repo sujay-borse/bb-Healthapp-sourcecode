@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: register-service
+  namespace: bbhealthapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: register-service
+  template:
+    metadata:
+      labels:
+        app: register-service
+    spec:
+      containers:
+      - name: register-service
+        image: 874632206513.dkr.ecr.us-west-2.amazonaws.com/bbhealthapp-register-service:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        envFrom:
+        - configMapRef:
+            name: bbhealthapp-config
+        - secretRef:
+            name: bbhealthapp-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: register-service
+  namespace: bbhealthapp
+spec:
+  selector:
+    app: register-service
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP

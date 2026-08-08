@@ -14,39 +14,51 @@ import org.binarybrains.bbhealthapp.users.UserService;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 @Service(value = "BinaryBrainsUserDetailsService")
 public class BinaryBrainsUserDetailsService implements UserDetailsService {
 
+    private UserService userService;
 
-	private UserService userService;
+    private static final Logger log = LoggerFactory.getLogger(BinaryBrainsUserDetailsService.class);
 
+    @Autowired
+    public BinaryBrainsUserDetailsService(UserService userService) {
+        this.userService = userService;
+    }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-	private static final Logger log = LoggerFactory.getLogger(BinaryBrainsUserDetailsService.class);
+        log.info("==========================================");
+        log.info("LOGIN DEBUG");
+        log.info("Username Received : {}", username);
 
-	@Autowired
-	public BinaryBrainsUserDetailsService(UserService userService) {
-		this.userService = userService;
-	}
+        User user = userService.findByUserName(username);
 
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userService.findByUserName(username);
-		//log.info("loadUserByUsername " + user.toString());
-		if(user == null){
-			throw new UsernameNotFoundException("Invalid username or password.");
-		}
-		return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassword(), getAuthority(user));
-	}
+        if (user == null) {
+            log.info("USER NOT FOUND");
+            throw new UsernameNotFoundException("Invalid username or password.");
+        }
 
-	private Set<SimpleGrantedAuthority> getAuthority(User user) {
+        log.info("User Found       : {}", user.getUserName());
+        log.info("Email            : {}", user.getEmail());
+        log.info("Status           : {}", user.getStatus());
+        log.info("Password Hash    : {}", user.getPassword());
+        log.info("Roles            : {}", user.getRoles());
+        log.info("==========================================");
 
-		return user.getRoles()
-				.stream()
-				.map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-				.collect(Collectors.toSet());
+        return new org.springframework.security.core.userdetails.User(
+                user.getUserName(),
+                user.getPassword(),
+                getAuthority(user));
+    }
 
-	}
+    private Set<SimpleGrantedAuthority> getAuthority(User user) {
 
+        return user.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toSet());
+
+    }
 }

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: document-service
+  namespace: bbhealthapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: document-service
+  template:
+    metadata:
+      labels:
+        app: document-service
+    spec:
+      containers:
+      - name: document-service
+        image: 874632206513.dkr.ecr.us-west-2.amazonaws.com/bbhealthapp-document-service:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8082
+        envFrom:
+        - configMapRef:
+            name: bbhealthapp-config
+        - secretRef:
+            name: bbhealthapp-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: document-service
+  namespace: bbhealthapp
+spec:
+  selector:
+    app: document-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: ClusterIP

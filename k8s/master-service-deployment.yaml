@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: master-service
+  namespace: bbhealthapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: master-service
+  template:
+    metadata:
+      labels:
+        app: master-service
+    spec:
+      containers:
+      - name: master-service
+        image: 874632206513.dkr.ecr.us-west-2.amazonaws.com/bbhealthapp-master-service:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: bbhealthapp-config
+        - secretRef:
+            name: bbhealthapp-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-service
+  namespace: bbhealthapp
+spec:
+  selector:
+    app: master-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

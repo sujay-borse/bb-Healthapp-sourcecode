@@ -1,0 +1,47 @@
+services:
+
+  master-service:
+    build:
+      context: ./bbhealthapp-backend/bbhealthapp-api-master
+    container_name: bb-master-service
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  register-service:
+    build:
+      context: ./bbhealthapp-backend/bbhealthapp-api-register
+    container_name: bb-register-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - master-service
+    environment:
+      MASTER_SVC_HOST: master-service
+      MASTER_SVC_PORT: 8080
+    restart: unless-stopped
+
+  document-service:
+    build:
+      context: ./bbhealthapp-backend/bbhealthapp-api-document
+    container_name: bb-document-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - master-service
+    environment:
+      MASTER_SVC_HOST: master-service
+      MASTER_SVC_PORT: 8080
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./bbhealthapp-frontend
+    container_name: bb-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - master-service
+      - register-service
+      - document-service
+    restart: unless-stopped

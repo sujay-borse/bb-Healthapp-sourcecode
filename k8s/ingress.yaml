@@ -1,0 +1,65 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bbhealthapp-ingress
+  namespace: bbhealthapp
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+
+  # Frontend (NO rewrite)
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bbhealthapp-api-ingress
+  namespace: bbhealthapp
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - http:
+      paths:
+
+      - path: /api/master(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: master-service
+            port:
+              number: 8080
+
+      - path: /api/register(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: register-service
+            port:
+              number: 8081
+
+      - path: /api/document(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: document-service
+            port:
+              number: 8082
