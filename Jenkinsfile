@@ -156,29 +156,28 @@ pipeline {
             }
 
         }
-                stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes') {
 
             steps {
 
-                bat """
-                kubectl apply -f k8s\\namespace.yaml
-                kubectl apply -f k8s\\configmap.yaml
-                kubectl apply -f k8s\\secret.yaml
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
 
-                kubectl apply -f k8s\\master-service-deployment.yaml
-                
+                    bat """
+                        kubectl apply -f k8s\\namespace.yaml
+                        kubectl apply -f k8s\\configmap.yaml
+                        kubectl apply -f k8s\\secret.yaml
 
-                kubectl apply -f k8s\\register-service-deployment.yaml
-                
+                        kubectl apply -f k8s\\master-service-deployment.yaml
+                        kubectl apply -f k8s\\register-service-deployment.yaml
+                        kubectl apply -f k8s\\document-service-deployment.yaml
+                        kubectl apply -f k8s\\frontend-deployment.yaml
+                        kubectl apply -f k8s\\ingress.yaml
+                    """
 
-                kubectl apply -f k8s\\document-service-deployment.yaml
-                
-
-                kubectl apply -f k8s\\frontend-deployment.yaml
-                
-
-                kubectl apply -f k8s\\ingress.yaml
-                """
+                }
 
             }
 
@@ -188,12 +187,19 @@ pipeline {
 
             steps {
 
-                bat """
-                kubectl get nodes
-                kubectl get pods -n bbhealthapp
-                kubectl get svc -n bbhealthapp
-                kubectl get ingress -n bbhealthapp
-                """
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+
+                    bat """
+                        kubectl get nodes
+                        kubectl get pods -n bbhealthapp
+                        kubectl get svc -n bbhealthapp
+                        kubectl get ingress -n bbhealthapp
+                    """
+
+                }
 
             }
 
